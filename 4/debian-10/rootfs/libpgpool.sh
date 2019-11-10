@@ -451,6 +451,13 @@ EOF
 pgpool_generate_password_file() {
     if is_boolean_yes "$PGPOOL_ENABLE_POOL_PASSWD"; then
         info "Generating password file for local authentication..."
+        IFS=',' read -ra USER_PASSES <<< "$PGPOOL_POSTGRES_PASSWD"
+        for USER_PASS in ${USER_PASSES[@]}
+            do
+        	IFS=':' read -ra USER <<< "$USER_PASS"
+        	info "> Adding user ${USER[0]}"
+        	pg_md5 -m --config-file="$PGPOOL_CONF_FILE" -u "${USER[0]}" "${USER[1]}"
+            done
 
         pg_md5 -m --config-file="$PGPOOL_CONF_FILE" -u "$PGPOOL_POSTGRES_USERNAME" "$PGPOOL_POSTGRES_PASSWORD"
     else
